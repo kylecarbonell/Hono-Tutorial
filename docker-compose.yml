@@ -1,0 +1,20 @@
+name: "test"
+
+services:
+  db:
+    container_name: testdb
+    build:
+      context: .
+      dockerfile: ./pgvector.Dockerfile
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-test}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-test}
+      - POSTGRES_DB=${POSTGRES_DB:-testdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    restart: always
+
+volumes:
+  postgres_data:
