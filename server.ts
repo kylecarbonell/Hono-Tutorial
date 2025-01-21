@@ -15,8 +15,8 @@ async function addUser(name: string, email: string, id: string) {
   return res;
 }
 
-async function getUser(name: string) {
-  const res = await db.select().from(users).where(eq(users.name, name));
+async function getUser() {
+  const res = await db.select().from(users);
   console.log(res);
   return res;
 }
@@ -36,18 +36,43 @@ async function updateUser(name: string, email: string, newName: string) {
 
 const app = new Hono().basePath("/api/v1");
 
-app.post("/post", (c) => {
-  const id = uuidv4();
-  return c.json({ name: addUser("Joomey", "James@gmail.com", id) });
+app.post("/create", async (c) => {
+  try {
+    const { name } = await c.req.json();
+    console.log(name);
+    const id = uuidv4();
+    addUser(name, name + "@gmail.com", id);
+    return c.json("success");
+  } catch (error) {
+    c.json({ error });
+  }
 });
-app.get("/get", (c) => {
-  const user = getUser("Joomey");
-  return c.json("HI");
+app.get("/read", async (c) => {
+  try {
+    const user = await getUser();
+    return c.json(user);
+  } catch (error) {
+    c.json({ error });
+  }
 });
-app.delete("/delete", (c) => {
-  return c.json({ name: deleteUser("Joe") });
+app.delete("/delete", async (c) => {
+  try {
+    const { name } = await c.req.json();
+    deleteUser(name);
+    return c.json("Deleted user : " + name);
+  } catch (error) {
+    c.json({ error });
+  }
 });
-app.patch("/update", (c) => {
-  return c.json({ name: updateUser("Joomey", "Joe@gmail.com", "Joe") });
+app.patch("/update", async (c) => {
+  try {
+    const { oldName, name } = await c.req.json();
+    console.log(name);
+    const id = uuidv4();
+    updateUser(oldName, name + "@gmail.com", name);
+    return c.json("Updated User to : ", name);
+  } catch (error) {
+    c.json({ error });
+  }
 });
 Deno.serve({ port: 8080 }, app.fetch);
